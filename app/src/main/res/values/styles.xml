@@ -1,0 +1,14 @@
+<resources>
+    <style name="ShiroLight" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowAnimationStyle">@style/ScreenAnimation</item>
+    </style>
+    <style name="ShiroDark" parent="@android:style/Theme.NoTitleBar">
+        <item name="android:windowAnimationStyle">@style/ScreenAnimation</item>
+    </style>
+    <style name="ScreenAnimation" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/screen_enter</item>
+        <item name="android:activityOpenExitAnimation">@anim/screen_exit</item>
+        <item name="android:activityCloseEnterAnimation">@anim/screen_back_enter</item>
+        <item name="android:activityCloseExitAnimation">@anim/screen_back_exit</item>
+    </style>
+</resources>
