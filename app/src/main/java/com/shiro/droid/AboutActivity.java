@@ -98,7 +98,7 @@ public final class AboutActivity extends Activity {
         hero.setOrientation(LinearLayout.VERTICAL);
         hero.setGravity(Gravity.CENTER_HORIZONTAL);
         hero.setPadding(0, dp(16), 0, dp(8));
-        ImageView icon = new ImageView(this);
+        ImageView icon = new AvatarView(this);
         icon.setImageResource(R.mipmap.ic_launcher);
         hero.addView(icon, new LinearLayout.LayoutParams(dp(88), dp(88)));
         TextView name = text("Shiro", 30, theme.ink, true);
