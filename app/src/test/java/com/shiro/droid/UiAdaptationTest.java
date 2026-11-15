@@ -146,9 +146,9 @@ public final class UiAdaptationTest {
         MainActivity main = org.robolectric.Robolectric.buildActivity(MainActivity.class).setup().get();
         assertNotNull(findText(main.getWindow().getDecorView(), "shiro-droid"));
         assertNotNull(findText(main.getWindow().getDecorView(), "by sqmrak :3"));
-        assertEquals("1.0.0-canary", main.getPackageManager().getPackageInfo(main.getPackageName(), 0).versionName);
+        assertEquals("1.1.0-canary", main.getPackageManager().getPackageInfo(main.getPackageName(), 0).versionName);
         AboutActivity about = org.robolectric.Robolectric.buildActivity(AboutActivity.class).setup().get();
-        assertNotNull(findText(about.getWindow().getDecorView(), "1.0.0-canary"));
+        assertNotNull(findText(about.getWindow().getDecorView(), "1.1.0-canary"));
     }
     @Test public void dialogChoicesAndButtonsAcceptDpadFocus() {
         android.app.Activity activity = org.robolectric.Robolectric.buildActivity(android.app.Activity.class).setup().get();
