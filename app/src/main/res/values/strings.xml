@@ -125,4 +125,8 @@
     <string name="error_root_no_route">No network has a default route</string>
     <string name="error_root_route_read">Cannot read network routes</string>
     <string name="error_root_bind">Cannot bind the socket to the network interface</string>
+    <string name="paused">Paused</string>
+    <string name="notification_pause">Pause</string>
+    <string name="notification_stop">Stop</string>
+    <string name="notification_start">Start</string>
 </resources>

@@ -22,6 +22,7 @@ import java.util.Arrays;
 public final class ShiroVpnService extends VpnService {
     public static final String CONNECT = "com.shiro.droid.CONNECT";
     public static final String DISCONNECT = "com.shiro.droid.DISCONNECT";
+    public static final String PAUSE = "com.shiro.droid.PAUSE";
     public static final String STATE = "com.shiro.droid.STATE";
     private static final String TAG = "shiro";
     private static final int NOTICE = 1;
@@ -30,6 +31,8 @@ public final class ShiroVpnService extends VpnService {
     private volatile int generation;
     private volatile boolean wanted;
     private volatile boolean foreground;
+    /* the user paused from the notification: the tunnel is down and the notification stays with a start button */
+    private volatile boolean paused;
     private ParcelFileDescriptor tun;
     private long core;
     private byte[] account;
@@ -63,8 +66,17 @@ public final class ShiroVpnService extends VpnService {
 
     @Override public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent == null ? null : intent.getAction();
+        if (PAUSE.equals(action)) {
+            if (!wanted) return START_NOT_STICKY;
+            wanted = false;
+            paused = true;
+            final int run = ++generation;
+            worker.post(new Runnable() { @Override public void run() { pause(run); } });
+            return START_NOT_STICKY;
+        }
         if (DISCONNECT.equals(action)) {
             wanted = false;
+            paused = false;
             final int run = ++generation;
             worker.post(new Runnable() { @Override public void run() { disconnect(run, "off", ""); } });
             return START_NOT_STICKY;
@@ -72,6 +84,7 @@ public final class ShiroVpnService extends VpnService {
         if (!CONNECT.equals(action)) return START_NOT_STICKY;
         if (wanted) return START_NOT_STICKY;
         wanted = true;
+        paused = false;
         publish("connecting", "");
         final int run = ++generation;
         startForeground(NOTICE, notice(getString(R.string.connecting)));
@@ -196,6 +209,12 @@ public final class ShiroVpnService extends VpnService {
         stopSelf();
     }
 
+    private void pause(int run) {
+        if (run != generation) return;
+        cleanup();
+        publish("off", "");
+    }
+
     private void disconnect(int run, String state, String message) {
         if (run != generation) return;
         cleanup();
@@ -220,6 +239,9 @@ public final class ShiroVpnService extends VpnService {
             int label = state.equals("up") ? R.string.connected : state.equals("registering") ? R.string.registering : R.string.connecting;
             android.app.NotificationManager manager = (android.app.NotificationManager)getSystemService(NOTIFICATION_SERVICE);
             manager.notify(NOTICE, notice(getString(label)));
+        } else if (foreground && paused && state.equals("off")) {
+            android.app.NotificationManager manager = (android.app.NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+            manager.notify(NOTICE, notice(getString(R.string.paused)));
         }
         Intent event = new Intent(STATE).setPackage(getPackageName());
         event.putExtra("state", state);
@@ -229,6 +251,15 @@ public final class ShiroVpnService extends VpnService {
         Log.i(TAG, state + (error.length() == 0 ? "" : ": " + error));
     }
 
+    private PendingIntent servicePending(String action) {
+        Intent intent = new Intent(this, ShiroVpnService.class).setAction(action);
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= 23) flags |= 0x04000000;
+        /* a start from a paused service is a connect, which must call startForeground within seconds */
+        if (Build.VERSION.SDK_INT >= 26 && CONNECT.equals(action)) return PendingIntent.getForegroundService(this, 1, intent, flags);
+        return PendingIntent.getService(this, 2 + action.length(), intent, flags);
+    }
+
     private Notification notice(String text) {
         if (Build.VERSION.SDK_INT >= 26) NotificationChannelCompat.create(this);
         Intent open = new Intent(this, MainActivity.class);
@@ -236,11 +267,21 @@ public final class ShiroVpnService extends VpnService {
         if (Build.VERSION.SDK_INT >= 23) flags |= 0x04000000;
         PendingIntent pending = PendingIntent.getActivity(this, 0, open, flags);
         Notification.Builder builder = new Notification.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat)
                 .setLargeIcon(android.graphics.BitmapFactory.decodeResource(getResources(), R.drawable.notification_large))
                 .setContentTitle("Shiro")
                 .setContentText(text).setOngoing(true).setContentIntent(pending);
         if (Build.VERSION.SDK_INT >= 26) NotificationChannelCompat.setChannel(builder);
+        if (Build.VERSION.SDK_INT >= 16) {
+            if (paused) {
+                builder.addAction(0, getString(R.string.notification_start), servicePending(CONNECT));
+            } else {
+                builder.addAction(0, getString(R.string.notification_pause), servicePending(PAUSE));
+                builder.addAction(0, getString(R.string.notification_stop), servicePending(DISCONNECT));
+            }
+        }
+        /* android 12 and newer hold a foreground service notification back for up to 10 seconds */
+        if (Build.VERSION.SDK_INT >= 31) builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE);
         return builder.getNotification();
     }
 }

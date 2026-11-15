@@ -30,7 +30,7 @@ public final class NotificationTest {
             Notification first = Shadows.shadowOf(manager).getNotification(1);
             assertNotNull(first);
             assertEquals(service.getString(R.string.connecting), first.extras.getCharSequence(Notification.EXTRA_TEXT));
-            assertEquals(R.mipmap.ic_launcher, first.getSmallIcon().getResId());
+            assertEquals(R.drawable.ic_stat, first.getSmallIcon().getResId());
             assertNotNull(first.extras.getParcelable(Notification.EXTRA_LARGE_ICON));
             publish.invoke(service, "up", "");
             Notification connected = Shadows.shadowOf(manager).getNotification(1);

@@ -125,4 +125,8 @@
     <string name="error_root_no_route">Нет сети с маршрутом по умолчанию</string>
     <string name="error_root_route_read">Не удалось прочитать сетевые маршруты</string>
     <string name="error_root_bind">Не удалось привязать сокет к сетевому интерфейсу</string>
+    <string name="paused">Приостановлено</string>
+    <string name="notification_pause">Пауза</string>
+    <string name="notification_stop">Стоп</string>
+    <string name="notification_start">Старт</string>
 </resources>

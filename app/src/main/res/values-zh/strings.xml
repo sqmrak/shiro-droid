@@ -125,4 +125,8 @@
     <string name="error_root_no_route">没有网络具有默认路由</string>
     <string name="error_root_route_read">无法读取网络路由</string>
     <string name="error_root_bind">无法将套接字绑定到网络接口</string>
+    <string name="paused">已暂停</string>
+    <string name="notification_pause">暂停</string>
+    <string name="notification_stop">停止</string>
+    <string name="notification_start">开始</string>
 </resources>
