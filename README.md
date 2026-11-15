@@ -29,7 +29,7 @@
 
 the service registers an account, opens a `VpnService` tun and runs the wireguard packet core. it protects the warp udp socket from the vpn and tries up to five endpoints. direct and blocked ipv4 networks and tunnel dns come from private preferences.
 
-ipv6 is routed to the tun and discarded by the ipv4-only core. the system must accept both the address and the route or connection fails. this still needs device verification.
+on android 5.0 and later ipv6 is blocked by VpnService because the core carries ipv4 only; this avoids advertising an ipv6 route that cannot deliver packets. android 4.x routes ipv6 to the tun and discards it. both paths still need device verification.
 
 the quick settings tile connects or disconnects the tunnel. if vpn permission is needed, the tile opens the app.
 

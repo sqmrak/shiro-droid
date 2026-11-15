@@ -116,15 +116,7 @@ public final class ShiroVpnService extends VpnService {
                 @Override public void run() { if (live(run)) publish("registering", ""); }
             });
             if (!live(run)) { cleanup(); return; }
-            Builder builder = new Builder().setSession("Shiro").setMtu(1280);
-            builder.addAddress(Native.address(account), 32);
-            builder.addAddress("fd00:5348::1", 128);
-            builder.addRoute("::", 0);
-            for (String route : routes) {
-                int slash = route.indexOf('/');
-                builder.addRoute(route.substring(0, slash), Integer.parseInt(route.substring(slash + 1)));
-            }
-            builder.addDnsServer(dns);
+            Builder builder = configureTunnel(new Builder(), Native.address(account), routes, dns);
             tun = builder.establish();
             if (tun == null) throw new IOException("VPN permission was refused or revoked");
             if (!live(run)) { cleanup(); return; }
@@ -140,6 +132,22 @@ public final class ShiroVpnService extends VpnService {
         } catch (IllegalStateException e) {
             failed(run, "VPN service is unavailable: " + e.getMessage());
         }
+    }
+
+    static Builder configureTunnel(Builder builder, String address, String[] routes, String dns) {
+        builder.setSession("Shiro").setMtu(1280);
+        builder.addAddress(address, 32);
+        if (Build.VERSION.SDK_INT < 21) {
+            /* android 4.x needs a route to keep ipv6 from escaping the ipv4-only tunnel */
+            builder.addAddress("fd00:5348::1", 128);
+            builder.addRoute("::", 0);
+        }
+        for (String route : routes) {
+            int slash = route.indexOf('/');
+            builder.addRoute(route.substring(0, slash), Integer.parseInt(route.substring(slash + 1)));
+        }
+        builder.addDnsServer(dns);
+        return builder;
     }
 
     private void startCore(final int run, final String direct, final String block) throws IOException {
