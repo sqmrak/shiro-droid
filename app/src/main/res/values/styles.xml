@@ -1,5 +1,7 @@
 <resources>
     <style name="ShiroLight" parent="@android:style/Theme.Light.NoTitleBar">
+        <!-- the starting window uses this manifest theme before onCreate picks the dark one, a white flash for dark users -->
+        <item name="android:windowDisablePreview">true</item>
         <item name="android:windowAnimationStyle">@style/ScreenAnimation</item>
     </style>
     <style name="ShiroDark" parent="@android:style/Theme.NoTitleBar">
